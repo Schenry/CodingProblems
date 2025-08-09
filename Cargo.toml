@@ -1,0 +1,3 @@
+[workspace]
+members = ["problems/min_size_subarray_sum"]
+
