@@ -14,10 +14,56 @@ fn main() {
     io::stdin().read_to_string(&mut input).unwrap();
 }
 
+/// Okay, so it needs to be contiguous. Pretty obvious this is a sliding window
+/// Trick will be the min subarray - we need to consider dropping on the front and expanding on the back
+/// Then there could be the case of a less optimal number between a goo number - like
+/// [1, 15, 5, 6, 2, 32]
+///     ^ this will feel especially large compared to the 2 at the end
+///
+/// So thinking through the flow - We maintain a window and walk the array, managing the min:
+///    1. For each number -
+///      a. is the number enough alone? -> return 1
+///    2. keep running total - add current num to total
+///    3. is running_sum > target?
+///      a. yes - this is a valid window - check it against the current min and update if needed
+///        1. move left
+///      b. no - add right
 pub fn min_sub_array_len(target: i32, nums: Vec<i32>) -> i32 {
-    let mut count = 0;
+    // min that satisfies target
+    let mut current_min = 0;
+    // pointer to left edge of window
+    let mut left_index = 0;
+    // Current window sum:
+    let mut current_sum = 0;
 
-    count
+    // Index needed to track left
+    for (index, num) in nums.iter().enumerate() {
+        // edge case - num alone satisfies:
+        if num >= &target {
+            return 1; // yes, return - cant do better
+        }
+
+        current_sum += num;
+
+        // While loop to shrink the window as we can
+        if current_sum >= target {
+            while current_sum >= target {
+                // Found an answer - update in case it's *the* answer:
+                // (right is index+1, left is left_index, current min is right - left)
+                let calculated_min = index + 1 - left_index;
+
+                if current_min == 0 || calculated_min < current_min {
+                    current_min = calculated_min;
+                }
+
+                // if we can lose the left hand digit, drop it and update again
+                current_sum -= nums[left_index];
+                left_index += 1;
+            }
+        }
+    }
+
+    current_min as i32
 }
 
 #[cfg(test)]
